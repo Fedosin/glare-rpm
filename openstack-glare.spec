@@ -91,7 +91,7 @@ Requires:         python-wsme >= 0.8
 Requires:         pyOpenSSL >= 0.14
 Requires:         python-os-brick >= 1.8.0
 Requires:         python-microversion-parse >= 0.1.2
-Requires:         python-monolithic >= 0.6
+Requires:         python-monotonic >= 0.6
 Requires:         python-jwt >= 1.0.1
 Requires:         python-cryptography >= 1.0
 
