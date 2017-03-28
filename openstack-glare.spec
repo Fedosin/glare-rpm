@@ -41,6 +41,7 @@ BuildRequires:    python-routes
 BuildRequires:    python-oslo-messaging >= 4.0.0
 BuildRequires:    python-semantic-version
 BuildRequires:    python-wsme >= 0.8
+BuildRequires:    python-jwt
 
 %description
 Glare Artifact Repository
