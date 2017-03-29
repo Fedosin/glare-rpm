@@ -1,0 +1,73 @@
+---
+# Ansible rpm build automation for Glare
+# Usage: "ansible-playbook -i <TARGET_HOST_NAME>, glare_rpm_build_automation.yaml --extra-vars='ansible_become_pass=<REMOTE_PASSWORD> remote_user=<REMOTE_USER>''
+# Example: ansible-playbook -i 192.168.56.101, glare_rpm_build_automation.yaml --extra-vars='ansible_become_pass=qwerty remote_user=mfedosin'
+# Output: built packages in rpms/ folders
+# CentOS 7 is required for target host
+- name: Ansible rpmbuild for Glare
+  hosts: all
+  tasks:
+    - name: Create build folders
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+      with_items:
+        - "{{ ansible_user_dir }}/rpmbuild"
+        - "{{ ansible_user_dir }}/rpmbuild/SPECS"
+        - "{{ ansible_user_dir }}/rpmbuild/SOURCES"
+    - name: Download glare tarball and systemd spec
+      get_url:
+        url: "{{ item }}"
+        dest: "{{ ansible_user_dir }}/rpmbuild/SOURCES"
+      with_items:
+        - "http://tarballs.openstack.org/glare/glare-master.tar.gz"
+        - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare-api.service"
+        - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/glare.logrotate"
+    - name: Download glare rpm spec
+      get_url:
+        url: "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare.spec"
+        dest: "{{ ansible_user_dir }}/rpmbuild/SPECS"
+    - name: Get current version
+      shell: "tar tf '{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-master.tar.gz' | head -1 | awk '{ print substr( $0, 7, length($0)-7 ) }'"
+      register: command_output
+    - set_fact:
+        glare_version: "{{ command_output.stdout }}"
+    - name: Rename tar file
+      command: mv '{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-master.tar.gz' '{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-{{ glare_version }}.tar.gz'
+    - name: Set version for the spec
+      lineinfile:
+        dest: "{{ ansible_user_dir }}/rpmbuild/SPECS/openstack-glare.spec"
+        regexp: 'Version:[ \t]+XXX$'
+        line: 'Version:          {{ glare_version }}'
+    - name: Enable OpenStack Ocata repository
+      yum:
+        name: centos-release-openstack-ocata
+        state: present
+      become: yes
+    - name: Get list of build requirements
+      shell: "grep BuildRequires {{ ansible_user_dir }}/rpmbuild/SPECS/openstack-glare.spec | cut -c 19- | cut -d ' ' -f 1"
+      register: command_output
+    - set_fact:
+        build_requirments: "{{ command_output.stdout_lines }}"
+    - name: Install build requirements
+      yum:
+        name: "{{ item }}"
+        state: present
+      become: yes
+      with_items:
+        "{{ build_requirments }}"
+    - name: Build glare packages
+      shell: "rpmbuild -ba {{ ansible_user_dir }}/rpmbuild/SPECS/openstack-glare.spec"
+    - name: Get list of built files
+      shell: "ls {{ ansible_user_dir }}/rpmbuild/RPMS/noarch | grep {{ glare_version }}"
+      register: command_output
+    - set_fact:
+        built_packages: "{{ command_output.stdout_lines }}"
+    - name: Fetch built files
+      fetch:
+        src: "{{ ansible_user_dir }}/rpmbuild/RPMS/noarch/{{ item }}"
+        dest: rpms/
+        flat: yes
+      with_items:
+        "{{ built_packages }}"

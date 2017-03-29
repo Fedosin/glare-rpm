@@ -1,7 +1,7 @@
 ---
-# Ansible rpm build automation for Glare
-# Usage: "ansible-playbook -i <TARGET_HOST_NAME>, ansible_build_automation.yaml --extra-vars='ansible_become_pass=<REMOTE_PASSWORD> remote_user=<REMOTE_USER>"
-# Example: ansible-playbook -i 192.168.56.101, ansible_build_automation.yaml --extra-vars='ansible_become_pass=qwerty remote_user=mfedosin"
+# Ansible rpm build automation for Glare client
+# Usage: "ansible-playbook -i <TARGET_HOST_NAME>, glareclient_rpm_build_automation.yaml --extra-vars='ansible_become_pass=<REMOTE_PASSWORD> remote_user=<REMOTE_USER>''
+# Example: ansible-playbook -i 192.168.56.101, glareclient_rpm_build_automation.yaml --extra-vars='ansible_become_pass=qwerty remote_user=mfedosin'
 # Output: built packages in rpms/ folders
 # CentOS 7 is required for target host
 - name: Ansible rpmbuild for Glare
@@ -18,28 +18,25 @@
         - "{{ ansible_user_dir }}/rpmbuild/SOURCES"
     - name: Download glare tarball and systemd spec
       get_url:
-        url: "{{ item }}"
+        url: "http://tarballs.openstack.org/python-glareclient/python-glareclient-master.tar.gz"
         dest: "{{ ansible_user_dir }}/rpmbuild/SOURCES"
-      with_items:
-        - "http://tarballs.openstack.org/glare/glare-master.tar.gz"
-        - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare-api.service"
-        - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/glare.logrotate"
-    - name: Download glare rpm spec
+    - name: Download glareclient rpm spec
       get_url:
-        url: "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare.spec"
+        url: "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/python-glareclient.spec"
         dest: "{{ ansible_user_dir }}/rpmbuild/SPECS"
+        validate_certs: False
     - name: Get current version
-      shell: "tar tf '{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-master.tar.gz' | head -1 | awk '{ print substr( $0, 7, length($0)-7 ) }'"
+      shell: "tar tf '{{ ansible_user_dir }}/rpmbuild/SOURCES/python-glareclient-master.tar.gz' | head -1 | awk '{ print substr( $0, 20, length($0)-20 ) }'"
       register: command_output
     - set_fact:
-        glare_version: "{{ command_output.stdout }}"
+        glareclient_version: "{{ command_output.stdout }}"
     - name: Rename tar file
-      command: mv '{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-master.tar.gz' '{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-{{ glare_version }}.tar.gz'
+      command: mv '{{ ansible_user_dir }}/rpmbuild/SOURCES/python-glareclient-master.tar.gz' '{{ ansible_user_dir }}/rpmbuild/SOURCES/python-glareclient-{{ glareclient_version }}.tar.gz'
     - name: Set version for the spec
       lineinfile:
-        dest: "{{ ansible_user_dir }}/rpmbuild/SPECS/openstack-glare.spec"
-        regexp: 'Version:          XXX$'
-        line: 'Version:          {{ glare_version }}'
+        dest: "{{ ansible_user_dir }}/rpmbuild/SPECS/python-glareclient.spec"
+        regexp: 'Version:[ \t]+XXX$'
+        line: 'Version:          {{ glareclient_version }}'
     - name: Enable OpenStack Ocata repository
       yum:
         name: centos-release-openstack-ocata
@@ -57,10 +54,10 @@
       become: yes
       with_items:
         "{{ build_requirments }}"
-    - name: Build glare packages
-      shell: "rpmbuild -ba {{ ansible_user_dir }}/rpmbuild/SPECS/openstack-glare.spec"
+    - name: Build glareclient packages
+      shell: "rpmbuild -ba {{ ansible_user_dir }}/rpmbuild/SPECS/python-glareclient.spec"
     - name: Get list of built files
-      shell: "ls {{ ansible_user_dir }}/rpmbuild/RPMS/noarch | grep {{ glare_version }}"
+      shell: "ls {{ ansible_user_dir }}/rpmbuild/RPMS/noarch | grep {{ glareclient_version }}"
       register: command_output
     - set_fact:
         built_packages: "{{ command_output.stdout_lines }}"
