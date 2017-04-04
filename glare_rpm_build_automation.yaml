@@ -58,7 +58,7 @@
     - name: Install build requirements
       yum:
         name: "{{ item }}"
-        state: present
+        state: latest
       become: yes
       with_items:
         "{{ build_requirments }}"
