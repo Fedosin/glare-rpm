@@ -45,6 +45,11 @@
         name: centos-release-openstack-ocata
         state: present
       become: yes
+    - name: Install rpmbuild
+      yum:
+        name: rpm-build
+        state: present
+      become: yes
     - name: Get list of build requirements
       shell: "grep BuildRequires {{ ansible_user_dir }}/rpmbuild/SPECS/openstack-glare.spec | cut -c 19- | cut -d ' ' -f 1"
       register: command_output

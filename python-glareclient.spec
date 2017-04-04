@@ -22,7 +22,7 @@ Source0:        https://tarballs.openstack.org/%{name}/%{name}-%{upstream_versio
 BuildArch:      noarch
 
 %description
-Python client for Glare REST API. Includes python library for Glare API, 
+Python client for Glare REST API. Includes python library for Glare API,
 Command Line Interface (CLI) library and openctackclient plugin.
 
 
@@ -49,7 +49,7 @@ Summary:        Python client for Glare REST API
 %{?python_provide:%python_provide python2-%{pypi_name}}
 
 %description -n python2-%{pypi_name}
-Python client for Glare REST API. Includes python library for Glare API, 
+Python client for Glare REST API. Includes python library for Glare API,
 Command Line Interface (CLI) library and openctackclient plugin.
 
 
@@ -77,7 +77,7 @@ Requires:       python3-six >= 1.9.0
 Requires:       python3-stevedore >= 1.17.1
 
 %description -n python3-%{pypi_name}
-Python client for Glare REST API. Includes python library for Glare API, 
+Python client for Glare REST API. Includes python library for Glare API,
 Command Line Interface (CLI) library and openctackclient plugin.
 %endif
 
@@ -86,11 +86,11 @@ Command Line Interface (CLI) library and openctackclient plugin.
 %package -n python-%{pypi_name}-doc
 Summary:       Documentation for python client for Glare REST API
 
-BuildRequires: python-sphinx
-BuildRequires: python-oslo-sphinx >= 2.3.0
+BuildRequires:  python-sphinx
+BuildRequires:  python-oslo-sphinx >= 2.3.0
 
 %description -n python-%{pypi_name}-doc
-Python client for Glare REST API. Includes python library for Glare API, 
+Python client for Glare REST API. Includes python library for Glare API,
 Command Line Interface (CLI) library and openctackclient plugin.
 
 
