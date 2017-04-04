@@ -51,7 +51,7 @@ Glare Artifact Repository
 Summary:          OpenStack Glare python libraries
 
 
-Requires:         python-alembic >= 0.8.10
+Requires:         python-alembic >= 0.8.7
 Requires:         python-eventlet >= 0.18.2
 Requires:         python-futurist >= 0.11.0
 Requires:         python-glance-store >= 0.18.0
@@ -62,7 +62,7 @@ Requires:         python-jsonschema >= 2.0.0
 Requires:         python-keystoneauth1 >= 2.18.0
 Requires:         python-keystoneclient >= 1:3.8.0
 Requires:         python-keystonemiddleware >= 4.12.0
-Requires:         python-memcached >= 1.56
+Requires:         python-memcached >= 1.54
 Requires:         python-oslo-concurrency >= 3.8.0
 Requires:         python-oslo-config >= 2:3.14.0
 Requires:         python-oslo-context >= 2.12.0
@@ -80,7 +80,7 @@ Requires:         python-oslo-vmware >= 0.11.1
 Requires:         python-osprofiler >= 1.4.0
 Requires:         python-paste
 Requires:         python-paste-deploy >= 1.5.0
-Requires:         python-pbr >= 1.8 
+Requires:         python-pbr >= 1.8
 Requires:         python-retrying >= 1.2.3
 Requires:         python-routes >= 1.12.3
 Requires:         python-semantic-version >= 2.3.1
