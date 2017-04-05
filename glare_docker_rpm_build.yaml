@@ -1,0 +1,116 @@
+---
+# Ansible rpm build automation for Glare using docker container
+# Usage: "sudo ansible-playbook glare_docker_rpm_build.yaml'
+# Output: built packages in rpms/ folders
+# Installed docker is required for this playbook
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: create build dir
+      file: path={{result_dir}} state=directory
+
+    - name: start build container
+      docker_container:
+        name: "{{vmname}}"
+        hostname: "{{vmname}}"
+        image: "centos:7"
+        state: started
+        tty: yes
+        keep_volumes: no
+        volumes:
+          - "{{result_dir}}:/vol1"
+
+    - name: add container to inventory
+      add_host:
+        name: "{{vmname}}"
+        ansible_host: "{{vmname}}"
+        ansible_user: root
+        ansible_connection: docker
+      changed_when: false
+  vars:
+      vmname: build-centos7
+      result_dir: "{{'~/dev/build-rpm' | expanduser}}"
+
+- hosts: build-centos7
+  gather_facts: no
+  tasks:
+    - name: Create build folders
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+      with_items:
+        - "/root/rpmbuild"
+        - "/root/rpmbuild/SPECS"
+        - "/root/rpmbuild/SOURCES"
+    - name: Download glare tarball and systemd spec
+      get_url:
+        url: "{{ item }}"
+        dest: "/root/rpmbuild/SOURCES"
+      with_items:
+        - "http://tarballs.openstack.org/glare/glare-master.tar.gz"
+        - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare-api.service"
+        - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/glare.logrotate"
+    - name: Download glare rpm spec
+      get_url:
+        url: "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare.spec"
+        dest: "/root/rpmbuild/SPECS"
+    - name: Get current version
+      shell: "tar tf '/root/rpmbuild/SOURCES/glare-master.tar.gz' | head -1 | awk '{ print substr( $0, 7, length($0)-7 ) }'"
+      register: command_output
+    - set_fact:
+        glare_version: "{{ command_output.stdout }}"
+    - name: Rename tar file
+      command: mv '/root/rpmbuild/SOURCES/glare-master.tar.gz' '/root/rpmbuild/SOURCES/glare-{{ glare_version }}.tar.gz'
+    - name: Set version for the spec
+      lineinfile:
+        dest: "/root/rpmbuild/SPECS/openstack-glare.spec"
+        regexp: 'Version:[ \t]+XXX$'
+        line: 'Version:          {{ glare_version }}'
+    - name: Enable OpenStack Ocata repository
+      yum:
+        name: centos-release-openstack-ocata
+        state: present
+      become: yes
+    - name: Install rpmbuild
+      yum:
+        name: rpm-build
+        state: present
+      become: yes
+    - name: Get list of build requirements
+      shell: "grep BuildRequires /root/rpmbuild/SPECS/openstack-glare.spec | cut -c 19- | cut -d ' ' -f 1"
+      register: command_output
+    - set_fact:
+        build_requirments: "{{ command_output.stdout_lines }}"
+    - name: Install build requirements
+      yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        "{{ build_requirments }}"
+    - name: Build glare packages
+      shell: "rpmbuild -ba /root/rpmbuild/SPECS/openstack-glare.spec"
+    - name: Get list of built files
+      shell: "ls /root/rpmbuild/RPMS/noarch | grep {{ glare_version }}"
+      register: command_output
+    - set_fact:
+        built_packages: "{{ command_output.stdout_lines }}"
+    - name: Fetch built files
+      fetch:
+        src: "/root/rpmbuild/RPMS/noarch/{{ item }}"
+        dest: rpms/
+        flat: yes
+      with_items:
+        "{{ built_packages }}"
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: destroy build container
+      docker_container:
+        name: "{{vmname}}"
+        state: absent
+  vars:
+      vmname: build-centos7
