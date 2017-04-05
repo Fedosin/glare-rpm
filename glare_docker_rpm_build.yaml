@@ -48,6 +48,7 @@
       get_url:
         url: "{{ item }}"
         dest: "/root/rpmbuild/SOURCES"
+        validate_certs: no
       with_items:
         - "http://tarballs.openstack.org/glare/glare-master.tar.gz"
         - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare-api.service"
@@ -56,6 +57,7 @@
       get_url:
         url: "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare.spec"
         dest: "/root/rpmbuild/SPECS"
+        validate_certs: no
     - name: Get current version
       shell: "tar tf '/root/rpmbuild/SOURCES/glare-master.tar.gz' | head -1 | awk '{ print substr( $0, 7, length($0)-7 ) }'"
       register: command_output
