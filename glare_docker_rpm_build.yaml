@@ -7,9 +7,6 @@
   connection: local
   gather_facts: no
   tasks:
-    - name: create build dir
-      file: path={{result_dir}} state=directory
-
     - name: start build container
       docker_container:
         name: "{{vmname}}"
@@ -18,8 +15,6 @@
         state: started
         tty: yes
         keep_volumes: no
-        volumes:
-          - "{{result_dir}}:/vol1"
 
     - name: add container to inventory
       add_host:
@@ -30,7 +25,6 @@
       changed_when: false
   vars:
       vmname: build-centos7
-      result_dir: "{{'~/dev/build-rpm' | expanduser}}"
 
 - hosts: build-centos7
   gather_facts: no
