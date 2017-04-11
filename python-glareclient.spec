@@ -23,7 +23,7 @@ BuildArch:      noarch
 
 %description
 Python client for Glare REST API. Includes python library for Glare API,
-Command Line Interface (CLI) library and openctackclient plugin.
+Command Line Interface (CLI) library and openstackclient plugin.
 
 
 %package -n     python2-%{pypi_name}
@@ -50,7 +50,7 @@ Summary:        Python client for Glare REST API
 
 %description -n python2-%{pypi_name}
 Python client for Glare REST API. Includes python library for Glare API,
-Command Line Interface (CLI) library and openctackclient plugin.
+Command Line Interface (CLI) library and openstackclient plugin.
 
 
 # Python3 package
@@ -78,7 +78,7 @@ Requires:       python3-stevedore >= 1.17.1
 
 %description -n python3-%{pypi_name}
 Python client for Glare REST API. Includes python library for Glare API,
-Command Line Interface (CLI) library and openctackclient plugin.
+Command Line Interface (CLI) library and openstackclient plugin.
 %endif
 
 
@@ -91,7 +91,7 @@ BuildRequires:  python-oslo-sphinx >= 2.3.0
 
 %description -n python-%{pypi_name}-doc
 Python client for Glare REST API. Includes python library for Glare API,
-Command Line Interface (CLI) library and openctackclient plugin.
+Command Line Interface (CLI) library and openstackclient plugin.
 
 
 %prep
