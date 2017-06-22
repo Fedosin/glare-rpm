@@ -1,7 +1,7 @@
 ---
 # Ansible rpm build automation for Glare
-# Usage: "ansible-playbook -i <TARGET_HOST_NAME>, glare_rpm_build_automation.yaml --extra-vars='ansible_become_pass=<REMOTE_PASSWORD> remote_user=<REMOTE_USER>''
-# Example: ansible-playbook -i 192.168.56.101, glare_rpm_build_automation.yaml --extra-vars='ansible_become_pass=qwerty remote_user=mfedosin'
+# Usage: "ansible-playbook -i <TARGET_HOST_NAME>, glare_rpm_build_automation.yaml --extra-vars='ansible_become_pass=<REMOTE_PASSWORD> remote_user=<REMOTE_USER> branch_name=<BRANCH_NAME>''
+# Example: ansible-playbook -i 192.168.56.101, glare_rpm_build_automation.yaml --extra-vars='ansible_become_pass=qwerty remote_user=mfedosin branch_name=stable-ocata'
 # Output: built packages in rpms/ folders
 # CentOS 7 is required for target host
 - name: Ansible rpmbuild for Glare
@@ -21,7 +21,7 @@
         url: "{{ item }}"
         dest: "{{ ansible_user_dir }}/rpmbuild/SOURCES"
       with_items:
-        - "http://tarballs.openstack.org/glare/glare-master.tar.gz"
+        - "http://tarballs.openstack.org/glare/glare-{{ branch_name |  default('master') }}.tar.gz"
         - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare-api.service"
         - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/glare.logrotate"
     - name: Download glare rpm spec
@@ -29,12 +29,12 @@
         url: "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare.spec"
         dest: "{{ ansible_user_dir }}/rpmbuild/SPECS"
     - name: Get current version
-      shell: "tar tf '{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-master.tar.gz' | head -1 | awk '{ print substr( $0, 7, length($0)-7 ) }'"
+      shell: "tar tf '{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-{{ branch_name | default('master') }}.tar.gz' | head -1 | awk '{ print substr( $0, 7, length($0)-7 ) }'"
       register: command_output
     - set_fact:
         glare_version: "{{ command_output.stdout }}"
     - name: Rename tar file
-      command: mv '{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-master.tar.gz' '{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-{{ glare_version }}.tar.gz'
+      command: mv "{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-{{ branch_name | default('master') }}.tar.gz" "{{ ansible_user_dir }}/rpmbuild/SOURCES/glare-{{ glare_version }}.tar.gz"
     - name: Set version for the spec
       lineinfile:
         dest: "{{ ansible_user_dir }}/rpmbuild/SPECS/openstack-glare.spec"

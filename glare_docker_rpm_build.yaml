@@ -44,7 +44,7 @@
         dest: "/root/rpmbuild/SOURCES"
         validate_certs: no
       with_items:
-        - "http://tarballs.openstack.org/glare/glare-master.tar.gz"
+        - "http://tarballs.openstack.org/glare/glare-{{ branch_name |  default('master') }}.tar.gz"
         - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare-api.service"
         - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/glare.logrotate"
     - name: Download glare rpm spec
@@ -53,12 +53,12 @@
         dest: "/root/rpmbuild/SPECS"
         validate_certs: no
     - name: Get current version
-      shell: "tar tf '/root/rpmbuild/SOURCES/glare-master.tar.gz' | head -1 | awk '{ print substr( $0, 7, length($0)-7 ) }'"
+      shell: "tar tf '/root/rpmbuild/SOURCES/glare-{{ branch_name |  default('master') }}.tar.gz' | head -1 | awk '{ print substr( $0, 7, length($0)-7 ) }'"
       register: command_output
     - set_fact:
         glare_version: "{{ command_output.stdout }}"
     - name: Rename tar file
-      command: mv '/root/rpmbuild/SOURCES/glare-master.tar.gz' '/root/rpmbuild/SOURCES/glare-{{ glare_version }}.tar.gz'
+      command: mv "/root/rpmbuild/SOURCES/glare-{{ branch_name |  default('master') }}.tar.gz" "/root/rpmbuild/SOURCES/glare-{{ glare_version }}.tar.gz"
     - name: Set version for the spec
       lineinfile:
         dest: "/root/rpmbuild/SPECS/openstack-glare.spec"
