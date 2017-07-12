@@ -40,7 +40,6 @@ BuildRequires:    python-requests
 BuildRequires:    python-routes
 BuildRequires:    python-oslo-messaging >= 4.0.0
 BuildRequires:    python-semantic-version
-BuildRequires:    python-wsme >= 0.8
 BuildRequires:    python-jwt
 
 %description
@@ -52,6 +51,7 @@ Summary:          OpenStack Glare python libraries
 
 
 Requires:         python-alembic >= 0.8.7
+Requires:         python-cryptography >= 1.0
 Requires:         python-eventlet >= 0.18.2
 Requires:         python-futurist >= 0.11.0
 Requires:         python-glance-store >= 0.18.0
@@ -59,10 +59,14 @@ Requires:         python-httplib2 >= 0.7.5
 Requires:         python-iso8601 >= 0.1.11
 Requires:         python-jsonpatch >= 1.1
 Requires:         python-jsonschema >= 2.0.0
+Requires:         python-jwt >= 1.0.1
 Requires:         python-keystoneauth1 >= 2.18.0
 Requires:         python-keystoneclient >= 1:3.8.0
 Requires:         python-keystonemiddleware >= 4.12.0
 Requires:         python-memcached >= 1.54
+Requires:         python-microversion-parse >= 0.1.2
+Requires:         python-monotonic >= 0.6
+Requires:         python-os-brick >= 1.8.0
 Requires:         python-oslo-concurrency >= 3.8.0
 Requires:         python-oslo-config >= 2:3.14.0
 Requires:         python-oslo-context >= 2.12.0
@@ -88,18 +92,12 @@ Requires:         python-six >= 1.9.0
 Requires:         python-sqlalchemy >= 1.0.10
 Requires:         python-swiftclient >= 2.2.0
 Requires:         python-webob >= 1.6.0
-Requires:         python-wsme >= 0.8
 Requires:         pyOpenSSL >= 0.14
-Requires:         python-os-brick >= 1.8.0
-Requires:         python-microversion-parse >= 0.1.2
-Requires:         python-monotonic >= 0.6
-Requires:         python-jwt >= 1.0.1
-Requires:         python-cryptography >= 1.0
 
 #test deps: python-mox python-nose python-requests
 #test and optional store:
-#ceph - glance.store.rdb
-#python-boto - glance.store.s3
+#ceph - glance_store.rdb
+#python-boto - glance_store.s3
 Requires:         python-boto
 
 %description -n   python-glare
