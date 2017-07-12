@@ -225,6 +225,7 @@ exit 0
 %files api
 %{_bindir}/glare-api
 %{_bindir}/glare-db-manage
+%(_bindir}/glare-scrubber
 %{_unitdir}/%{name}-api.service
 
 
