@@ -1,37 +1,51 @@
-%global pypi_name glareclient
-%global cliname   glare
-
-%{!?python2_shortver: %global python2_shortver %(%{__python2} -c 'import sys; print(str(sys.version_info.major) + "." + str(sys.version_info.minor))')}
-
-%if 0%{?fedora}
-%global with_python3 0
-%{!?python3_shortver: %global python3_shortver %(%{__python3} -c 'import sys; print(str(sys.version_info.major) + "." + str(sys.version_info.minor))')}
-%endif
-
 %{!?upstream_version: %global upstream_version %{version}%{?milestone}}
 
-Name:           python-%{pypi_name}
-Version:        XXX
-Release:        XXX
-Summary:        Python client for Glare REST API
+%global sname glareclient
 
-License:        ASL 2.0
-URL:            https://pypi.io/pypi/python-glareclient
-Source0:        https://tarballs.openstack.org/%{name}/%{name}-%{upstream_version}.tar.gz
+%if 0%{?fedora}
+%global with_python3 1
+%endif
 
-BuildArch:      noarch
+Name:    python-glareclient
+Version: XXX
+Release: XXX
+Summary: Python API and CLI for OpenStack Glare
+
+License: ASL 2.0
+URL:     https://launchpad.net/python-glareclient
+Source0: https://tarballs.openstack.org/%{name}/%{name}-%{upstream_version}.tar.gz
+
+BuildArch: noarch
 
 %description
 Python client for Glare REST API. Includes python library for Glare API,
 Command Line Interface (CLI) library and openstackclient plugin.
 
+%package -n python2-%{sname}
+Summary: Python API and CLI for OpenStack Glare
+%{?python_provide:%python_provide python2-%{sname}}
+BuildRequires:       python2-devel
+BuildRequires:       python-setuptools
+BuildRequires:       python-pbr
+BuildRequires:       git
+BuildRequires:       python-cliff >= 2.3.0
+BuildRequires:       python-keystoneclient >= 1:3.8.0
+BuildRequires:       python-openstackclient >= 1.5.0
+BuildRequires:       python-oslo-i18n >= 2.1.0
+BuildRequires:       python-oslo-utils >= 3.18.0
+BuildRequires:       python-osprofiler
+BuildRequires:       python-requests >= 2.10.0
+BuildRequires:       python-six >= 1.9.0
 
-%package -n     python2-%{pypi_name}
-
-BuildRequires:  python2-devel
-BuildRequires:  python-setuptools
-BuildRequires:  python-pbr
-BuildRequires:  git
+# Required for tests
+BuildRequires:       python-os-testr
+BuildRequires:       python-oslotest
+BuildRequires:       python-osc-lib-tests
+BuildRequires:       python-testrepository
+BuildRequires:       python-testscenarios
+BuildRequires:       python-testtools
+BuildRequires:       python-mock
+BuildRequires:       python-requests-mock
 
 Requires:       python-cliff >= 2.3.0
 Requires:       python-keystoneclient >= 1:3.8.0
@@ -43,26 +57,36 @@ Requires:       python-osprofiler
 Requires:       python-pbr
 Requires:       python-requests >= 2.10.0
 Requires:       python-six >= 1.9.0
-Requires:       python-stevedore >= 1.17.1
 
-Summary:        Python client for Glare REST API
-%{?python_provide:%python_provide python2-%{pypi_name}}
-
-%description -n python2-%{pypi_name}
+%description -n python2-%{sname}
 Python client for Glare REST API. Includes python library for Glare API,
 Command Line Interface (CLI) library and openstackclient plugin.
 
-
-# Python3 package
 %if 0%{?with_python3}
-%package -n     python3-%{pypi_name}
-Summary:        Python client for Glare REST API
-%{?python_provide:%python_provide python3-%{pypi_name}}
+%package -n python3-%{sname}
+Summary: Python API and CLI for OpenStack Glare
+%{?python_provide:%python_provide python3-%{sname}}
+BuildRequires:       python3-devel
+BuildRequires:       python3-setuptools
+BuildRequires:       python3-pbr
+BuildRequires:       python3-cliff >= 2.3.0
+BuildRequires:       python3-keystoneclient >= 1:3.8.0
+BuildRequires:       python3-openstackclient >= 1.5.0
+BuildRequires:       python3-oslo-i18n >= 2.1.0
+BuildRequires:       python3-oslo-utils >= 3.18.0
+BuildRequires:       python3-osprofiler
+BuildRequires:       python3-requests >= 2.10.0
+BuildRequires:       python3-six >= 1.9.0
 
-BuildRequires:  python3-devel
-BuildRequires:  python3-setuptools
-BuildRequires:  python3-pbr >= 0.6
-BuildRequires:  python-tools
+# Required for tests
+BuildRequires:       python3-os-testr
+BuildRequires:       python3-oslotest
+BuildRequires:       python3-osc-lib-tests
+BuildRequires:       python3-testrepository
+BuildRequires:       python3-testscenarios
+BuildRequires:       python3-testtools
+BuildRequires:       python3-mock
+BuildRequires:       python3-requests-mock
 
 Requires:       python3-cliff >= 2.3.0
 Requires:       python3-keystoneclient >= 1:3.8.0
@@ -74,105 +98,99 @@ Requires:       python3-osprofiler
 Requires:       python3-pbr
 Requires:       python3-requests >= 2.10.0
 Requires:       python3-six >= 1.9.0
-Requires:       python3-stevedore >= 1.17.1
 
-%description -n python3-%{pypi_name}
+%description -n python3-%{sname}
 Python client for Glare REST API. Includes python library for Glare API,
 Command Line Interface (CLI) library and openstackclient plugin.
 %endif
 
+%package doc
+Summary: Documentation for OpenStack Glare API Client
 
-# Documentation package
-%package -n python-%{pypi_name}-doc
-Summary:       Documentation for python client for Glare REST API
+BuildRequires: python-sphinx
+BuildRequires: python-oslo-sphinx
 
-BuildRequires:  python-sphinx
-BuildRequires:  python-oslo-sphinx >= 2.3.0
-
-%description -n python-%{pypi_name}-doc
+%description doc
 Python client for Glare REST API. Includes python library for Glare API,
 Command Line Interface (CLI) library and openstackclient plugin.
 
+This package contains auto-generated documentation.
 
 %prep
 %autosetup -n %{name}-%{upstream_version} -S git
+
+%py_req_cleanup
+
 # Remove bundled egg-info
 rm -rf %{pypi_name}.egg-info
-# Let RPM handle the dependencies
-rm -f test-requirements.txt requirements.txt
-
-%if 0%{?with_python3}
-rm -rf %{py3dir}
-cp -a . %{py3dir}
-2to3 --write --nobackups %{py3dir}
-%endif
 
 
 %build
-%{__python2} setup.py build
-
+%py2_build
 %if 0%{?with_python3}
-pushd %{py3dir}
-LANG=en_US.UTF-8 %{__python3} setup.py build
-popd
+%py3_build
 %endif
-
-# generate html docs
-sphinx-build doc/source html
-# remove the sphinx-build leftovers
-rm -rf html/.{doctrees,buildinfo}
-
 
 %install
 %if 0%{?with_python3}
-pushd %{py3dir}
-LANG=en_US.UTF-8 %{__python3} setup.py install --skip-build --root %{buildroot}
-mv %{buildroot}%{_bindir}/%{cliname} %{buildroot}%{_bindir}/python3-%{cliname}
-popd
+%py3_install
+echo "%{version}" > %{buildroot}%{python3_sitelib}/%{sname}/versioninfo
+mv %{buildroot}%{_bindir}/glare %{buildroot}%{_bindir}/glare-%{python3_version}
+ln -s ./glare-%{python3_version} %{buildroot}%{_bindir}/glare-3
+# Delete tests
+rm -fr %{buildroot}%{python3_sitelib}/%{sname}/tests
 %endif
 
-%{__python2} setup.py install --skip-build --root %{buildroot}
+%py2_install
+echo "%{version}" > %{buildroot}%{python2_sitelib}/%{sname}/versioninfo
+mv %{buildroot}%{_bindir}/glare %{buildroot}%{_bindir}/glare-%{python2_version}
+ln -s ./glare-%{python2_version} %{buildroot}%{_bindir}/glare-2
 
-# rename binaries, make compat symlinks
-pushd %{buildroot}%{_bindir}
-for i in %{cliname}-{2,%{?python2_shortver}}; do
-    ln -s %{cliname} $i
-done
+ln -s ./glare-2 %{buildroot}%{_bindir}/glare
+
+mkdir -p %{buildroot}%{_sysconfdir}/bash_completion.d
+install -pm 644 tools/glare.bash_completion \
+    %{buildroot}%{_sysconfdir}/bash_completion.d/glare
+
+%{__python2} setup.py build_sphinx -b html
+# Fix hidden-file-or-dir warnings
+rm -fr doc/build/html/.doctrees doc/build/html/.buildinfo
+
+# generate man page
+%{__python2} setup.py build_sphinx -b man
+install -p -D -m 644 doc/build/man/glare.1 %{buildroot}%{_mandir}/man1/glare.1
+
+%check
 %if 0%{?with_python3}
-for i in %{cliname}-{3,%{?python3_shortver}}; do
-    ln -s  python3-%{cliname} $i
-done
+%{__python3} setup.py testr
+rm -rf .testrepository
 %endif
-popd
-# Install bash completion scripts
-mkdir -p %{buildroot}%{_sysconfdir}/bash_completion.d/
-install -m 644 -T tools/glare.bash_completion %{buildroot}%{_sysconfdir}/bash_completion.d/python-glareclient
+%{__python2} setup.py testr
 
-
-%files -n python2-%{pypi_name}
-%license LICENSE
+%files -n python2-%{sname}
 %doc README.rst
-%{python2_sitelib}/%{pypi_name}
-%{python2_sitelib}/python_%{pypi_name}-*-py?.?.egg-info
+%license LICENSE
+%{python2_sitelib}/%{sname}
+%{python2_sitelib}/*.egg-info
+%{_sysconfdir}/bash_completion.d
+%{_mandir}/man1/glare.1.gz
 %{_bindir}/glare
-%{_bindir}/glare-2*
-%{_sysconfdir}/bash_completion.d/python-glareclient
+%{_bindir}/glare-2
+%{_bindir}/glare-%{python2_version}
 
-
-# Files for python3
 %if 0%{?with_python3}
-%files -n python3-%{pypi_name}
+%files -n python3-%{sname}
 %license LICENSE
 %doc README.rst
-%{_bindir}/python3-glare*
-%{_bindir}/glare-3*
-%{python3_sitelib}/%{pypi_name}
-%{python3_sitelib}/python_%{pypi_name}-*-py?.?.egg-info
+%{python3_sitelib}/%{sname}
+%{python3_sitelib}/*.egg-info
+%{_sysconfdir}/bash_completion.d
+%{_bindir}/glare-3
+%{_bindir}/glare-%{python3_version}
 %endif
 
-%files -n python-%{pypi_name}-doc
-%doc html
+%files doc
+%doc doc/build/html
 %license LICENSE
-
 
 %changelog

@@ -1,5 +1,7 @@
 %global service glare
 
+%global with_doc 1
+
 %{!?upstream_version: %global upstream_version %{version}%{?milestone}}
 
 Name:             openstack-%{service}
@@ -13,11 +15,15 @@ Source0:          http://tarballs.openstack.org/%{service}/%{service}-%{upstream
 Source1:          %{service}.logrotate
 
 Source10:         %{name}-api.service
+Source11:         %{name}-scrubber.service
 
-BuildRequires:    python2-devel
-BuildRequires:    python-setuptools
-BuildRequires:    python-pbr
+BuildRequires:    git
 BuildRequires:    intltool
+BuildRequires:    python2-devel
+BuildRequires:    python-pbr
+BuildRequires:    python-setuptools
+BuildRequires:    openstack-macros
+BuildRequires:    systemd
 # Required for config generation
 BuildRequires:    python-alembic
 BuildRequires:    python-cursive
@@ -40,6 +46,7 @@ BuildRequires:    python-requests
 BuildRequires:    python-routes
 BuildRequires:    python-oslo-messaging >= 4.0.0
 BuildRequires:    python-semantic-version
+BuildRequires:    python-taskflow >= 1.26.0
 BuildRequires:    python-jwt
 
 %description
@@ -91,6 +98,7 @@ Requires:         python-semantic-version >= 2.3.1
 Requires:         python-six >= 1.9.0
 Requires:         python-sqlalchemy >= 1.0.10
 Requires:         python-swiftclient >= 2.2.0
+Requires:         python-taskflow >= 2.7.0
 Requires:         python-webob >= 1.6.0
 Requires:         pyOpenSSL >= 0.14
 
@@ -99,6 +107,8 @@ Requires:         pyOpenSSL >= 0.14
 #ceph - glance_store.rdb
 #python-boto - glance_store.s3
 Requires:         python-boto
+
+Requires(pre):    shadow-utils
 
 %description -n   python-glare
 OpenStack Glare provides API for catalog of binary data along with its metadata.
@@ -110,11 +120,9 @@ Summary:        Components common to all OpenStack glare services
 
 Requires:       python-glare = %{version}-%{release}
 
-Requires(post):   systemd-units
-Requires(preun):  systemd-units
-Requires(postun): systemd-units
-Requires(pre):    shadow-utils
-
+Requires(post):   systemd
+Requires(preun):  systemd
+Requires(postun): systemd
 
 %description    common
 OpenStack Glare provides API for catalog of binary data along with its metadata.
@@ -134,15 +142,40 @@ This package contains the glare API service.
 %package -n python-glare-tests
 Summary:        Glare tests
 Requires:       python-glare = %{version}-%{release}
+Requires:       python-tempest
 
 %description -n python-glare-tests
 OpenStack Glare provides API for catalog of binary data along with its metadata.
 
 This package contains the Glare test files.
 
+%if 0%{?with_doc}
+%package        doc
+
+Summary:        Documentation for OpenStack Artifact Service
+
+BuildRequires:  python-sphinx
+BuildRequires:  python-oslo-sphinx
+BuildRequires:  python-sphinxcontrib-httpdomain
+BuildRequires:  python-eventlet
+BuildRequires:  python-jsonschema
+BuildRequires:  python-keystoneclient
+BuildRequires:  python-keystonemiddleware
+BuildRequires:  python-oslo-db
+BuildRequires:  python-oslo-log
+BuildRequires:  python-oslo-messaging
+BuildRequires:  python-oslo-policy
+BuildRequires:  python-osprofiler
+
+%description    doc
+OpenStack Glare documentaion.
+.
+This package contains the documentation
+%endif
+
 
 %prep
-%setup -q -n %{service}-%{upstream_version}
+%autosetup -n %{service}-%{upstream_version} -S git
 
 find . \( -name .gitignore -o -name .placeholder \) -delete
 
@@ -150,24 +183,28 @@ find glare -name \*.py -exec sed -i '/\/usr\/bin\/env python/{d;q}' {} +
 
 sed -i '/setup_requires/d; /install_requires/d; /dependency_links/d' setup.py
 
-rm -rf {test-,}requirements.txt tools/{pip,test}-requires
+%py_req_cleanup
 
 
 %build
 # Generate config file
 PYTHONPATH=. oslo-config-generator --config-file=etc/oslo-config-generator/glare.conf
-%{__python2} setup.py build
-
 # Generate oslo policies
-PYTHONPATH=. oslopolicy-sample-generator --namespace=glare --output-file=etc/policy.json.sample
-%{__python2} setup.py build
+PYTHONPATH=. oslopolicy-sample-generator --namespace=glare --output-file=etc/policy.yaml.sample
+PYTHONPATH=. sed -i 's/^#"//' etc/policy.yaml.sample
+%py2_build
 
 %install
-%{__python2} setup.py install --skip-build --root %{buildroot}
+%py2_install
+
+%if 0%{?with_doc}
+%{__python2} setup.py build_sphinx -b html
+rm -rf doc/build/html/.{doctrees,buildinfo}
+%endif
 
 # Install config files
 install -p -D -m 644 etc/glare.conf.sample %{buildroot}%{_sysconfdir}/glare/glare.conf
-install -p -D -m 644 etc/policy.json.sample %{buildroot}%{_sysconfdir}/glare/policy.json
+install -p -D -m 644 etc/policy.yaml.sample %{buildroot}%{_sysconfdir}/glare/policy.yaml
 install -p -D -m 644 etc/glare-paste.ini %{buildroot}%{_sysconfdir}/glare/glare-paste.ini
 install -p -D -m 644 etc/glare-swift.conf.sample %{buildroot}%{_sysconfdir}/glare/glare-swift.conf
 
@@ -178,12 +215,16 @@ install -d -m 755 %{buildroot}%{_localstatedir}/log/glare
 
 # Install systemd unit services
 install -p -D -m 644 %{SOURCE10} %{buildroot}%{_unitdir}/%{name}-api.service
+install -p -D -m 644 %{SOURCE11} %{buildroot}%{_unitdir}/%{name}-scrubber.service
 
 # Logrotate config
 install -p -D -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
 
 # Remove unused files
 rm -f %{buildroot}/usr/etc/glare/*
+
+# Create fake egg-info for the tempest plugin
+%py2_entrypoint glare glare
 
 %pre common
 getent group glare >/dev/null || groupadd -r glare
@@ -192,27 +233,37 @@ if ! getent passwd glare >/dev/null; then
 fi
 exit 0
 
-%post -n %{name}-api
+%post
+# Initial installation
 %systemd_post %{name}-api.service
+%systemd_post %{name}-scrubber.service
 
-%preun -n %{name}-api
+%preun
 %systemd_preun %{name}-api.service
+%systemd_preun %{name}-scrubber.service
+
+%postun
+%systemd_postun_with_restart %{name}-api.service
+%systemd_postun_with_restart %{name}-scrubber.service
 
 
 %files -n python-glare
+%license LICENSE
+%doc README.rst
 %{python2_sitelib}/glare
 %{python2_sitelib}/glare-*.egg-info
+%exclude %{python2_sitelib}/glare/tests
 %exclude %{python2_sitelib}/glare_tempest_plugin
 
 %files -n python-glare-tests
-%license LICENSE
+%{python2_sitelib}/glare/tests
 %{python2_sitelib}/glare_tempest_plugin
+%{python2_sitelib}/%{service}_tests.egg-info
 
 %files common
-%doc README.rst
 %dir %{_sysconfdir}/glare
 %config(noreplace) %attr(-, root, glare) %{_sysconfdir}/glare/glare.conf
-%config(noreplace) %attr(-, root, glare) %{_sysconfdir}/glare/policy.json
+%config(noreplace) %attr(-, root, glare) %{_sysconfdir}/glare/policy.yaml
 %config(noreplace) %attr(-, root, glare) %{_sysconfdir}/glare/glare-paste.ini
 %config(noreplace) %attr(-, root, glare) %{_sysconfdir}/glare/glare-swift.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/%{name}
@@ -225,8 +276,14 @@ exit 0
 %files api
 %{_bindir}/glare-api
 %{_bindir}/glare-db-manage
-%(_bindir}/glare-scrubber
+%{_bindir}/glare-scrubber
 %{_unitdir}/%{name}-api.service
+%{_unitdir}/%{name}-scrubber.service
 
+%if 0%{?with_doc}
+%files doc
+%license LICENSE
+%doc doc/build/html
+%endif
 
 %changelog
