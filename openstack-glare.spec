@@ -154,18 +154,18 @@ This package contains the Glare test files.
 
 Summary:        Documentation for OpenStack Artifact Service
 
-BuildRequires:  python-sphinx
-BuildRequires:  python-oslo-sphinx
-BuildRequires:  python-sphinxcontrib-httpdomain
-BuildRequires:  python-eventlet
-BuildRequires:  python-jsonschema
-BuildRequires:  python-keystoneclient
-BuildRequires:  python-keystonemiddleware
-BuildRequires:  python-oslo-db
-BuildRequires:  python-oslo-log
-BuildRequires:  python-oslo-messaging
-BuildRequires:  python-oslo-policy
-BuildRequires:  python-osprofiler
+BuildRequires:    python-sphinx
+BuildRequires:    python-oslo-sphinx
+BuildRequires:    python-sphinxcontrib-httpdomain
+BuildRequires:    python-eventlet
+BuildRequires:    python-jsonschema
+BuildRequires:    python-keystoneclient
+BuildRequires:    python-keystonemiddleware
+BuildRequires:    python-oslo-db
+BuildRequires:    python-oslo-log
+BuildRequires:    python-oslo-messaging
+BuildRequires:    python-oslo-policy
+BuildRequires:    python-osprofiler
 
 %description    doc
 OpenStack Glare documentaion.
