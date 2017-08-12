@@ -23,6 +23,7 @@
       with_items:
         - "http://tarballs.openstack.org/glare/glare-{{ branch_name |  default('master') }}.tar.gz"
         - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare-api.service"
+        - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare-scrubber.service"
         - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/glare.logrotate"
     - name: Download glare rpm spec
       get_url:

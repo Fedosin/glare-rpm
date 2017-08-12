@@ -25,29 +25,59 @@ BuildRequires:    python-setuptools
 BuildRequires:    openstack-macros
 BuildRequires:    systemd
 # Required for config generation
-BuildRequires:    python-alembic
+BuildRequires:    python-alembic >= 0.8.7
+BuildRequires:    python-cryptography >= 1.0
 BuildRequires:    python-cursive
-BuildRequires:    python-eventlet
-BuildRequires:    python-futurist
-BuildRequires:    python-glance-store >= 0.13.0
-BuildRequires:    python-httplib2
-BuildRequires:    python-jsonpatch
-BuildRequires:    python-memcached
-BuildRequires:    python-oslo-db
-BuildRequires:    python-oslo-config >= 2:3.7.0
-BuildRequires:    python-oslo-log
+BuildRequires:    python-eventlet >= 0.18.2
+BuildRequires:    python-futurist >= 0.11.0
+BuildRequires:    python-glance-store >= 0.18.0
+BuildRequires:    python-httplib2 >= 0.7.5
+BuildRequires:    python-iso8601 >= 0.1.11
+BuildRequires:    python-jsonpatch >= 1.1
+BuildRequires:    python-jsonschema >= 2.0.0
+BuildRequires:    python-jwt >= 1.0.1
+BuildRequires:    python-keystoneauth1 >= 2.18.0
+BuildRequires:    python-keystoneclient >= 1:3.8.0
+BuildRequires:    python-keystonemiddleware >= 4.12.0
+BuildRequires:    python-memcached >= 1.54
+BuildRequires:    python-microversion-parse >= 0.1.2
+BuildRequires:    python-monotonic >= 0.6
+BuildRequires:    python-os-brick >= 1.8.0
+BuildRequires:    python-oslo-concurrency >= 3.8.0
+BuildRequires:    python-oslo-config >= 2:3.14.0
+BuildRequires:    python-oslo-context >= 2.12.0
+BuildRequires:    python-oslo-db-tests
+BuildRequires:    python-oslo-i18n >= 2.1.0
+BuildRequires:    python-oslo-log >= 3.11.0
+BuildRequires:    python-oslo-messaging >= 5.14.0
 BuildRequires:    python-oslo-middleware >= 3.0.0
-BuildRequires:    python-oslo-policy >= 0.5.0
-BuildRequires:    python-oslo-utils >= 3.5.0
-BuildRequires:    python-oslo-versionedobjects
-BuildRequires:    python-osprofiler
-BuildRequires:    python-paste-deploy
-BuildRequires:    python-requests
-BuildRequires:    python-routes
-BuildRequires:    python-oslo-messaging >= 4.0.0
-BuildRequires:    python-semantic-version
-BuildRequires:    python-taskflow >= 1.26.0
-BuildRequires:    python-jwt
+BuildRequires:    python-oslo-policy >= 1.17.0
+BuildRequires:    python-oslo-serialization >= 1.10.0
+BuildRequires:    python-oslo-service >= 1.10.0
+BuildRequires:    python-oslo-utils >= 3.18.0
+BuildRequires:    python-oslo-versionedobjects >= 1.17.0
+BuildRequires:    python-oslo-vmware >= 0.11.1
+BuildRequires:    python-osprofiler >= 1.4.0
+BuildRequires:    python-paste
+BuildRequires:    python-paste-deploy >= 1.5.0
+BuildRequires:    python-pbr >= 1.8
+BuildRequires:    python-retrying >= 1.2.3
+BuildRequires:    python-routes >= 1.12.3
+BuildRequires:    python-semantic-version >= 2.3.1
+BuildRequires:    python-six >= 1.9.0
+BuildRequires:    python-sqlalchemy >= 1.0.10
+BuildRequires:    python-swiftclient >= 2.2.0
+BuildRequires:    python-taskflow >= 2.7.0
+BuildRequires:    python-webob >= 1.6.0
+BuildRequires:    pyOpenSSL >= 0.14
+# Required for tests
+BuildRequires:    python-os-testr
+BuildRequires:    python-oslotest
+BuildRequires:    python-testrepository
+BuildRequires:    python-testscenarios
+BuildRequires:    python-testtools
+BuildRequires:    python-mock
+BuildRequires:    python-requests-mock
 
 %description
 Glare Artifact Repository
@@ -259,6 +289,9 @@ exit 0
 %{python2_sitelib}/glare/tests
 %{python2_sitelib}/glare_tempest_plugin
 %{python2_sitelib}/%{service}_tests.egg-info
+
+%check
+%{__python2} setup.py testr
 
 %files common
 %dir %{_sysconfdir}/glare
