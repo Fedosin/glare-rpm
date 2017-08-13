@@ -240,7 +240,7 @@ install -p -D -m 644 etc/glare-swift.conf.sample %{buildroot}%{_sysconfdir}/glar
 
 # Setup directories
 install -d -m 755 %{buildroot}%{_sharedstatedir}/glare
-install -d -m 755 %{buildroot}%{_sharedstatedir}/glare/tmp
+install -d -m 755 %{buildroot}%{_sharedstatedir}/glare/artifacts
 install -d -m 755 %{buildroot}%{_localstatedir}/log/glare
 
 # Install systemd unit services
@@ -304,7 +304,7 @@ exit 0
 
 %defattr(-, glare, glare, -)
 %dir %{_sharedstatedir}/glare
-%dir %{_sharedstatedir}/glare/tmp
+%dir %{_sharedstatedir}/glare/artifacts
 
 %files api
 %{_bindir}/glare-api
