@@ -25,51 +25,51 @@ BuildRequires:    python-setuptools
 BuildRequires:    openstack-macros
 BuildRequires:    systemd
 # Required for config generation
-BuildRequires:    python-alembic >= 0.8.7
-BuildRequires:    python-cryptography >= 1.0
+BuildRequires:    python-alembic
+BuildRequires:    python-cryptography
 BuildRequires:    python-cursive
-BuildRequires:    python-eventlet >= 0.18.2
-BuildRequires:    python-futurist >= 0.11.0
-BuildRequires:    python-glance-store >= 0.18.0
-BuildRequires:    python-httplib2 >= 0.7.5
-BuildRequires:    python-iso8601 >= 0.1.11
-BuildRequires:    python-jsonpatch >= 1.1
-BuildRequires:    python-jsonschema >= 2.0.0
-BuildRequires:    python-jwt >= 1.0.1
-BuildRequires:    python-keystoneauth1 >= 2.18.0
-BuildRequires:    python-keystoneclient >= 1:3.8.0
-BuildRequires:    python-keystonemiddleware >= 4.12.0
-BuildRequires:    python-memcached >= 1.54
-BuildRequires:    python-microversion-parse >= 0.1.2
-BuildRequires:    python-monotonic >= 0.6
-BuildRequires:    python-os-brick >= 1.8.0
-BuildRequires:    python-oslo-concurrency >= 3.8.0
-BuildRequires:    python-oslo-config >= 2:3.14.0
-BuildRequires:    python-oslo-context >= 2.12.0
+BuildRequires:    python-eventlet
+BuildRequires:    python-futurist
+BuildRequires:    python-glance-store
+BuildRequires:    python-httplib2
+BuildRequires:    python-iso8601
+BuildRequires:    python-jsonpatch
+BuildRequires:    python-jsonschema
+BuildRequires:    python-jwt
+BuildRequires:    python-keystoneauth1
+BuildRequires:    python-keystoneclient
+BuildRequires:    python-keystonemiddleware
+BuildRequires:    python-memcached
+BuildRequires:    python-microversion-parse
+BuildRequires:    python-monotonic
+BuildRequires:    python-os-brick
+BuildRequires:    python-oslo-concurrency
+BuildRequires:    python-oslo-config
+BuildRequires:    python-oslo-context
 BuildRequires:    python-oslo-db-tests
-BuildRequires:    python-oslo-i18n >= 2.1.0
-BuildRequires:    python-oslo-log >= 3.11.0
-BuildRequires:    python-oslo-messaging >= 5.14.0
-BuildRequires:    python-oslo-middleware >= 3.0.0
-BuildRequires:    python-oslo-policy >= 1.17.0
-BuildRequires:    python-oslo-serialization >= 1.10.0
-BuildRequires:    python-oslo-service >= 1.10.0
-BuildRequires:    python-oslo-utils >= 3.18.0
-BuildRequires:    python-oslo-versionedobjects >= 1.17.0
-BuildRequires:    python-oslo-vmware >= 0.11.1
-BuildRequires:    python-osprofiler >= 1.4.0
+BuildRequires:    python-oslo-i18n
+BuildRequires:    python-oslo-log
+BuildRequires:    python-oslo-messaging
+BuildRequires:    python-oslo-middleware
+BuildRequires:    python-oslo-policy
+BuildRequires:    python-oslo-serialization
+BuildRequires:    python-oslo-service
+BuildRequires:    python-oslo-utils
+BuildRequires:    python-oslo-versionedobjects
+BuildRequires:    python-oslo-vmware
+BuildRequires:    python-osprofiler
 BuildRequires:    python-paste
-BuildRequires:    python-paste-deploy >= 1.5.0
-BuildRequires:    python-pbr >= 1.8
-BuildRequires:    python-retrying >= 1.2.3
-BuildRequires:    python-routes >= 1.12.3
-BuildRequires:    python-semantic-version >= 2.3.1
-BuildRequires:    python-six >= 1.9.0
-BuildRequires:    python-sqlalchemy >= 1.0.10
-BuildRequires:    python-swiftclient >= 2.2.0
-BuildRequires:    python-taskflow >= 2.7.0
-BuildRequires:    python-webob >= 1.6.0
-BuildRequires:    pyOpenSSL >= 0.14
+BuildRequires:    python-paste-deploy
+BuildRequires:    python-pbr
+BuildRequires:    python-retrying
+BuildRequires:    python-routes
+BuildRequires:    python-semantic-version
+BuildRequires:    python-six
+BuildRequires:    python-sqlalchemy
+BuildRequires:    python-swiftclient
+BuildRequires:    python-taskflow
+BuildRequires:    python-webob
+BuildRequires:    pyOpenSSL
 # Required for tests
 BuildRequires:    python-os-testr
 BuildRequires:    python-oslotest
@@ -150,10 +150,6 @@ Summary:        Components common to all OpenStack glare services
 
 Requires:       python-glare = %{version}-%{release}
 
-Requires(post):   systemd
-Requires(preun):  systemd
-Requires(postun): systemd
-
 %description    common
 OpenStack Glare provides API for catalog of binary data along with its metadata.
 
@@ -162,6 +158,10 @@ OpenStack Glare provides API for catalog of binary data along with its metadata.
 Summary:        OpenStack glare api
 
 Requires:       %{name}-common = %{version}-%{release}
+
+Requires(post):   systemd
+Requires(preun):  systemd
+Requires(postun): systemd
 
 %description api
 OpenStack Glare provides API for catalog of binary data along with its metadata.
@@ -263,18 +263,22 @@ if ! getent passwd glare >/dev/null; then
 fi
 exit 0
 
-%post
+%post api
 # Initial installation
 %systemd_post %{name}-api.service
 %systemd_post %{name}-scrubber.service
 
-%preun
+%preun api
 %systemd_preun %{name}-api.service
 %systemd_preun %{name}-scrubber.service
 
-%postun
+%postun api
 %systemd_postun_with_restart %{name}-api.service
 %systemd_postun_with_restart %{name}-scrubber.service
+
+
+%check
+%{__python2} setup.py testr
 
 
 %files -n python-glare
@@ -289,9 +293,6 @@ exit 0
 %{python2_sitelib}/glare/tests
 %{python2_sitelib}/glare_tempest_plugin
 %{python2_sitelib}/%{service}_tests.egg-info
-
-%check
-%{__python2} setup.py testr
 
 %files common
 %dir %{_sysconfdir}/glare
