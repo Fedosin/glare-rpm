@@ -25,6 +25,14 @@
         - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare-api.service"
         - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare-scrubber.service"
         - "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/glare.logrotate"
+    - name: Enable building macros
+      get_url:
+        url: "{{ item }}"
+        dest: "/usr/lib/rpm/macros.d/"
+      with_items:
+        - "https://raw.githubusercontent.com/openstack/rpm-packaging/master/openstack/openstack-macros/macros.openstack-common"
+        - "https://raw.githubusercontent.com/openstack/rpm-packaging/master/openstack/openstack-macros/macros.openstack-rdo"
+      become: yes
     - name: Download glare rpm spec
       get_url:
         url: "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/openstack-glare.spec"

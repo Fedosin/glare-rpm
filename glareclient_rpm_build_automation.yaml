@@ -25,6 +25,14 @@
         url: "https://raw.githubusercontent.com/Fedosin/glare-rpm/master/python-glareclient.spec"
         dest: "{{ ansible_user_dir }}/rpmbuild/SPECS"
         validate_certs: False
+    - name: Enable building macros
+      get_url:
+        url: "{{ item }}"
+        dest: "/usr/lib/rpm/macros.d/"
+      with_items:
+        - "https://raw.githubusercontent.com/openstack/rpm-packaging/master/openstack/openstack-macros/macros.openstack-common"
+        - "https://raw.githubusercontent.com/openstack/rpm-packaging/master/openstack/openstack-macros/macros.openstack-rdo"
+      become: yes
     - name: Get current version
       shell: "tar tf '{{ ansible_user_dir }}/rpmbuild/SOURCES/python-glareclient-master.tar.gz' | head -1 | awk '{ print substr( $0, 20, length($0)-20 ) }'"
       register: command_output
