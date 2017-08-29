@@ -48,7 +48,7 @@
         state: present
       become: yes
     - name: Get list of build requirements
-      shell: "grep BuildRequires {{ ansible_user_dir }}/rpmbuild/SPECS/python-glareclient.spec | cut -c 17- | cut -d ' ' -f 1"
+      shell: "grep BuildRequires {{ ansible_user_dir }}/rpmbuild/SPECS/python-glareclient.spec | cut -c 22- | cut -d ' ' -f 1"
       register: command_output
     - set_fact:
         build_requirments: "{{ command_output.stdout_lines }}"

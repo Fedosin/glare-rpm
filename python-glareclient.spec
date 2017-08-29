@@ -107,8 +107,8 @@ Command Line Interface (CLI) library and openstackclient plugin.
 %package doc
 Summary: Documentation for OpenStack Glare API Client
 
-BuildRequires: python-sphinx
-BuildRequires: python-oslo-sphinx
+BuildRequires:       python-sphinx
+BuildRequires:       python-oslo-sphinx
 
 %description doc
 Python client for Glare REST API. Includes python library for Glare API,
